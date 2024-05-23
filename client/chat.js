@@ -27,6 +27,9 @@ const input = document.getElementById("input");
 const sendButton = document.getElementById("sendButton");
 const messages = document.getElementById("messages");
 
+// Cargar el elemento de audio
+const messageSound = new Audio("./notificationSound.mp3");
+
 function scrollToBottom() {
   messages.scrollTop = messages.scrollHeight;
 }
@@ -36,7 +39,7 @@ input.addEventListener("input", () => {
 });
 
 socket.on("chat message", (msg, serverOffset, messageUser) => {
-  const isCurrentUser = messageUser === username; // Comparar con la variable 'username' del cliente
+  const isCurrentUser = messageUser === username;
   const itemClass = isCurrentUser ? "my-message" : "other-message";
 
   // Crear un nuevo elemento <li>
@@ -50,6 +53,11 @@ socket.on("chat message", (msg, serverOffset, messageUser) => {
   // Agregar el nuevo elemento <li> al contenedor de mensajes
   messages.appendChild(listItem);
 
+  // Solo reproducir el sonido de notificación si el mensaje no fue enviado por el usuario actual
+  if (!isCurrentUser) {
+    playMessageSound();
+  }
+
   socket.auth.serverOffset = serverOffset;
   scrollToBottom();
 });
@@ -57,8 +65,13 @@ socket.on("chat message", (msg, serverOffset, messageUser) => {
 form.addEventListener("submit", (e) => {
   e.preventDefault();
   if (input.value) {
-    socket.emit("chat message", input.value, username); // Asegurar que se envíe el nombre de usuario correcto
+    socket.emit("chat message", input.value, username);
     input.value = "";
     scrollToBottom();
   }
 });
+
+// Función para reproducir el sonido de notificación
+function playMessageSound() {
+  messageSound.play();
+}
